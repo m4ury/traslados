@@ -42,6 +42,21 @@ const user = computed(() => page.props.auth.user);
             class="space-y-6"
             v-slot="{ errors, processing }"
         >
+
+            <div class="grid gap-2">
+                <Label for="rut">Rut</Label>
+                <Input
+                    id="rut"
+                    class="mt-1 block w-full"
+                    name="rut"
+                    :default-value="user.rut"
+                    required
+                    autocomplete="rut"
+                    placeholder="Rut."
+                />
+                <InputError class="mt-2" :message="errors.rut" />
+            </div>
+
             <div class="grid gap-2">
                 <Label for="name">Nombres</Label>
                 <Input
@@ -54,6 +69,34 @@ const user = computed(() => page.props.auth.user);
                     placeholder="Nombre completo"
                 />
                 <InputError class="mt-2" :message="errors.name" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="apellido_paterno">Apellido paterno</Label>
+                <Input
+                    id="apellido_paterno"
+                    class="mt-1 block w-full"
+                    name="apellido_paterno"
+                    :default-value="user.apellido_paterno"
+                    required
+                    autocomplete="apellido_paterno"
+                    placeholder="Apellido paterno"
+                />
+                <InputError class="mt-2" :message="errors.apellido_paterno" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="apellido_materno">Apellido materno</Label>
+                <Input
+                    id="apellido_materno"
+                    class="mt-1 block w-full"
+                    name="apellido_materno"
+                    :default-value="user.apellido_materno"
+                    required
+                    autocomplete="apellido_materno"
+                    placeholder="Apellido materno"
+                />
+                <InputError class="mt-2" :message="errors.apellido_materno" />
             </div>
 
             <div class="grid gap-2">

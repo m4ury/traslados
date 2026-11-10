@@ -19,6 +19,8 @@ trait ProfileValidationRules
         return [
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
+            'rut' => $this->rutRules($userId),
+
         ];
     }
 
@@ -30,6 +32,11 @@ trait ProfileValidationRules
     protected function nameRules(): array
     {
         return ['required', 'string', 'max:255'];
+    }
+
+    protected function rutRules(): array
+    {
+        return ['required', 'string', 'cl_rut'];
     }
 
     /**
