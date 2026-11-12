@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('traslados', function (Blueprint $table) {
 
             /*
-            
+
             passengers_count
-            
+
             distance_km
             */
             $table->id();
@@ -48,14 +48,13 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-
             $table->index(['vehiculo_id', 'salida_at']);
             $table->index(['conductor_id', 'salida_at']);
 
             $table->index(['estado', 'programado_at']);
             $table->index(['vehiculo_id', 'estado']);
             $table->index(['conductor_id', 'estado']);
-            $table->index(['tpo_traslado', 'estado']);
+            $table->index(['tipo_traslado', 'estado']);
         });
     }
 

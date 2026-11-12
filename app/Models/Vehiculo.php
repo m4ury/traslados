@@ -1,16 +1,19 @@
 <?php
 
 namespace App\Models;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use Illuminate\Database\Eloquent\Model;
-
 class Vehiculo extends Model
 {
     use SoftDeletes;
-    
+
+    public const TYPES = ['Automóvil', 'Camioneta', 'Furgón', 'Minibús', 'Bus', 'Camión'];
+
     protected $fillable = [
         'placa',
         'vin',
@@ -26,6 +29,8 @@ class Vehiculo extends Model
 
     protected $casts = [
         'activo' => 'boolean',
+        'anio' => 'integer',
+        'actual_km' => 'integer',
     ];
 
     public function marca(): BelongsTo
@@ -36,6 +41,25 @@ class Vehiculo extends Model
     public function modelo(): BelongsTo
     {
         return $this->belongsTo(Modelo::class);
+    }
+
+    public function traslados(): HasMany
+    {
+        return $this->hasMany(Traslado::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('activo', true);
+    }
+
+    /** Activo y sin viaje en curso. */
+    public function scopeAvailable(Builder $query): Builder
+    {
+        return $query->active()->whereDoesntHave(
+            'traslados',
+            fn (Builder $q) => $q->where('status', TripStatus::InProgress)
+        );
     }
 
     public function conductorActual()

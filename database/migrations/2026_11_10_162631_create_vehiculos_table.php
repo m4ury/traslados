@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('vin', 32)->nullable()->unique();
             $table->string('numero_motor', 60)->nullable();
             $table->string('color', 50)->nullable();
-            $table->string('numero_motor', 60)->nullable();
             $table->string('transmision', 30)->nullable();
             $table->foreignId('modelo_id')->constrained('modelos');
             $table->foreignId('marca_id')->constrained('marcas');
@@ -28,7 +27,7 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->index(['marca_id', 'modelo_id', 'anio']);
-            $table->index('placa');
+            $table->index('patente');
         });
     }
 

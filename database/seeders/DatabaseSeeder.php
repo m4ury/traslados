@@ -7,7 +7,6 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
@@ -21,11 +20,8 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'admin',
-            'rut' => '9-1',
-            'apellido_paterno' => 'apellidoP',
-            'apellido_paterno' => 'apellidoM',
             'email' => 'admin@mail.com',
-            'password' => Hash::make('test1234')
+            'password' => Hash::make('test1234'),
         ]);
     }
 }
