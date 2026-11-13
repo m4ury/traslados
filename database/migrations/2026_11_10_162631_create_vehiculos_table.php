@@ -23,6 +23,7 @@ return new class extends Migration
             $table->unsignedSmallInteger('anio');
             $table->unsignedInteger('actual_km')->default(0);
             $table->boolean('activo')->default(true);
+            $table->boolean('in_trip')->default(true);
             $table->timestamps();
             $table->softDeletes();
 

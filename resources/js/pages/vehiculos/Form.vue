@@ -71,7 +71,7 @@ function submit() {
                     <CardContent class="grid gap-5 sm:grid-cols-2">
                         <div class="grid gap-2">
                             <Label for="patente">Patente</Label>
-                            <Input id="patente" v-model="form.patente" placeholder="ABCD12" maxlength="10" class="font-mono uppercase" />
+                            <Input id="patente" v-model="form.patente" placeholder="ABCD12" maxlength="10" class="font-mono uppercase" required="required" />
                             <InputError :message="form.errors.patente" />
                         </div>
 

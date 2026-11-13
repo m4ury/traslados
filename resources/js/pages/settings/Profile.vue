@@ -44,17 +44,54 @@ const user = computed(() => page.props.auth.user);
         >
 
             <div class="grid gap-2">
-                <Label for="name">Nombre</Label>
+                <Label for="rut">Rut</Label>
+                <Input
+                    id="rut"
+                    class="mt-1 block w-full"
+                    name="rut"
+                    :default-value="user.rut"
+                    required
+                    placeholder="Rut."
+                />
+                <InputError class="mt-2" :message="errors.rut" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="name">Nombres</Label>
                 <Input
                     id="name"
-                    class="mt-1 block w-full"
+                    required
+                    placeholder="Nombre completo"
                     name="name"
                     :default-value="user.name"
-                    required
-                    autocomplete="name"
-                    placeholder="Nombre usuario"
                 />
                 <InputError class="mt-2" :message="errors.name" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="apellido_paterno">Apellido paterno</Label>
+                <Input
+                    id="apellido_paterno"
+                    class="mt-1 block w-full"
+                    name="apellido_paterno"
+                    :default-value="user.apellido_paterno"
+                    required
+                    placeholder="Apellido paterno"
+                />
+                <InputError class="mt-2" :message="errors.apellido_paterno" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="apellido_materno">Apellido materno</Label>
+                <Input
+                    id="apellido_materno"
+                    class="mt-1 block w-full"
+                    name="apellido_materno"
+                    :default-value="user.apellido_materno"
+                    required
+                    placeholder="Apellido materno"
+                />
+                <InputError class="mt-2" :message="errors.apellido_materno" />
             </div>
 
             <div class="grid gap-2">
@@ -66,7 +103,6 @@ const user = computed(() => page.props.auth.user);
                     name="email"
                     :default-value="user.email"
                     required
-                    autocomplete="username"
                     placeholder="Email"
                 />
                 <InputError class="mt-2" :message="errors.email" />

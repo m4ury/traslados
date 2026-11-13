@@ -46,12 +46,12 @@ watch([brandId, status], applyFilters);
 
 function availability(v: Vehiculo) {
     if (!v.activo) return { label: 'Inactivo', class: 'text-muted-foreground', dot: 'bg-zinc-400' };
-    /* if (v.in_trip)
+     if (v.in_trip)
         return {
             label: 'En ruta',
             class: 'border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-300',
             dot: 'bg-violet-500',
-        }; */
+        };
     return {
         label: 'Disponible',
         class: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300',
@@ -135,7 +135,7 @@ function destroy() {
                             </TableCell>
                             <TableCell class="pr-4 text-right">
                                 <Button variant="ghost" size="icon" as-child title="Editar">
-                                    <Link :href="`/vehicles/${v.id}/edit`"><Pencil class="size-4" /></Link>
+                                    <Link :href="`/vehiculos/${v.id}/edit`"><Pencil class="size-4" /></Link>
                                 </Button>
                                 <Button variant="ghost" size="icon" title="Eliminar" class="text-destructive" @click="toDelete = v">
                                     <Trash2 class="size-4" />
@@ -144,9 +144,7 @@ function destroy() {
                         </TableRow>
                     </TableBody>
                 </Table>
-
                 <EmptyState v-else :icon="Car" title="No hay vehículos" description="No se encontraron vehículos con los filtros aplicados." />
-
                 <DataPagination :meta="vehiculos" />
             </Card>
         </div>

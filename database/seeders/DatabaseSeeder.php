@@ -20,9 +20,21 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'admin',
+            'rut' => '9-1',
+            'apellido_paterno' => 'apellidoP',
+            'apellido_materno' => 'apellidoM',
             'email' => 'admin@mail.com',
             'role' => 'admin',
             'password' => Hash::make('test1234'),
+        ]);
+        User::factory()->create([
+            'name' => 'conductor',
+            'rut' => '8-1',
+            'apellido_paterno' => 'apellido',
+            'apellido_materno' => 'apellido',
+            'email' => 'conductor@mail.com',
+            'role' => 'conductor',
+            'password' => Hash::make('conductor'),
         ]);
     }
 }

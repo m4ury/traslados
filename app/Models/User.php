@@ -48,7 +48,7 @@ class User extends Authenticatable
 
     public const ROLE_SUPERVISOR = 'supervisor';
 
-    public const ROLE_USER = 'user';
+    public const ROLE_USER = 'conductor';
 
     public function isAdmin(): bool
     {
@@ -68,5 +68,10 @@ class User extends Authenticatable
     public function conductor(): HasOne
     {
         return $this->hasOne(Conductor::class);
+    }
+
+    public function getFullNameAttribute()
+    {
+        return strtoupper("{$this->name} {$this->apellido_paterno} {$this->apellido_materno}");
     }
 }

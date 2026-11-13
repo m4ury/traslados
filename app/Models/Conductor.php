@@ -14,23 +14,20 @@ class Conductor extends Model
 
     protected $fillable = [
         'user_id',
-        'rut',
         'phone',
         'license_number',
+        'tipo_licencia',
         'license_expires_at',
         'en_turno',
         'activo',
-        'apellido_paterno',
-        'apellido_materno',
-        'nombres'
     ];
 
     protected function casts(): array
     {
         return [
             'license_expires_at' => 'date',
-            'is_on_duty' => 'boolean',
-            'is_active' => 'boolean',
+            'en_turno' => 'boolean',
+            'activo' => 'boolean',
         ];
     }
 
@@ -55,10 +52,5 @@ class Conductor extends Model
         return $query->active()
             ->where('en_turno', true)
             ->whereDoesntHave('traslados', fn (Builder $q) => $q->where('estado', EstadoTraslado::EnCurso));
-    }
-
-    public function getFullNameAttribute()
-    {
-        return strtoupper("{$this->nombres} {$this->apellido_paterno} {$this->apellido_materno}");
     }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ModeloController;
 use App\Http\Controllers\VehiculoController;
 use App\Http\Controllers\BitacoraController;
+use App\Http\Controllers\ConductorController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TrasladoController;
 
@@ -25,6 +26,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->parameters(['modelos' => 'modelo']);
 
             Route::resource('vehiculos', VehiculoController::class)->except(['show']);
+
+            Route::resource('conductores', ConductorController::class)->only(['index', 'store', 'update', 'destroy']);
+
         });
 
         // Traslados

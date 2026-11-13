@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { formatDateTime, formatKm, logEventMeta } from '@/lib/fleet';
-import type { TripLog } from '@/types/fleet';
+import type { Bitacora } from '@/types/fleet';
 import { MapPin } from '@lucide/vue';
 
-defineProps<{ logs: TripLog[] }>();
+defineProps<{ logs: Bitacora[] }>();
 </script>
 
 <template>

@@ -23,7 +23,7 @@ export interface Vehiculo {
     anio: number;
     actual_km: number;
     activo: boolean;
-    /* in_trip?: boolean; */
+    in_trip?: boolean;
     marca?: Pick<Marca, 'id' | 'name'>;
     modelo?: Pick<Modelo, 'id' | 'name'>;
 }

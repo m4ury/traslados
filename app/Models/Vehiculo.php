@@ -26,12 +26,14 @@ class Vehiculo extends Model
         'transmision',
         'actual_km',
         'activo',
+        'in_trip'
     ];
 
     protected $casts = [
         'activo' => 'boolean',
         'anio' => 'integer',
         'actual_km' => 'integer',
+        'in_trip' => 'boolean',
     ];
 
     public function marca(): BelongsTo
