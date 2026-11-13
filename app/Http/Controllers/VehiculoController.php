@@ -39,70 +39,70 @@ class VehiculoController extends Controller
         return $this->form();
     }
 
-    public function edit(Vehicle $vehicle): Response
+    public function edit(Vehiculo $vehiculo): Response
     {
-        return $this->form($vehicle);
+        return $this->form($vehiculo);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        Vehicle::create($this->validated($request));
+        Vehiculo::create($this->validated($request));
 
-        return to_route('vehicles.index')->with('success', 'Vehículo registrado.');
+        return to_route('vehiculos.index')->with('success', 'Vehículo registrado.');
     }
 
-    public function update(Request $request, Vehicle $vehicle): RedirectResponse
+    public function update(Request $request, Vehiculo $vehiculo): RedirectResponse
     {
-        $vehicle->update($this->validated($request, $vehicle));
+        $vehiculo->update($this->validated($request, $vehiculo));
 
-        return to_route('vehicles.index')->with('success', 'Vehículo actualizado.');
+        return to_route('vehiculos.index')->with('success', 'Vehículo actualizado.');
     }
 
-    public function destroy(Vehicle $vehicle): RedirectResponse
+    public function destroy(Vehiculo $vehiculo): RedirectResponse
     {
         // Si tiene historial de viajes no se borra: se desactiva para no perder la bitácora.
-        if ($vehicle->trips()->exists()) {
-            $vehicle->update(['is_active' => false]);
+        if ($vehiculo->trips()->exists()) {
+            $vehiculo->update(['is_active' => false]);
 
             return back()->with('success', 'El vehículo tiene viajes registrados, por lo que fue desactivado.');
         }
 
-        $vehicle->delete();
+        $vehiculo->delete();
 
         return back()->with('success', 'Vehículo eliminado.');
     }
 
-    private function form(?Vehicle $vehicle = null): Response
+    private function form(?Vehiculo $vehiculo = null): Response
     {
-        return Inertia::render('vehicles/Form', [
-            'vehicle' => $vehicle,
-            'brands' => Brand::query()
+        return Inertia::render('vehiculos/Form', [
+            'vehiculo' => $vehiculo,
+            'marcas' => Marca::query()
                 ->where('is_active', true)
-                ->when($vehicle, fn ($q) => $q->orWhere('id', $vehicle->brand_id))
-                ->with(['vehicleModels' => fn ($q) => $q->select('id', 'brand_id', 'name')->orderBy('name')])
+                ->when($vehiculo, fn ($q) => $q->orWhere('id', $vehiculo->marca_id))
+                ->with(['Modelos' => fn ($q) => $q->select('id', 'marca_id', 'name')->orderBy('name')])
                 ->orderBy('name')
                 ->get(['id', 'name']),
-            'types' => Vehicle::TYPES,
+            //'types' => Vehiculo::TYPES,
         ]);
     }
 
-    private function validated(Request $request, ?Vehicle $vehicle = null): array
+    private function validated(Request $request, ?Vehiculo $vehiculo = null): array
     {
-        $request->merge(['plate' => strtoupper(preg_replace('/[\s\.-]+/', '', (string) $request->plate))]);
+        $request->merge(['patente' => strtoupper(preg_replace('/[\s\.-]+/', '', (string) $request->patente))]);
 
         return $request->validate([
-            'plate' => ['required', 'string', 'max:10', Rule::unique('vehicles', 'plate')->ignore($vehicle)],
-            'brand_id' => ['required', 'exists:brands,id'],
-            'vehicle_model_id' => [
+            'patente' => ['required', 'string', 'max:10', Rule::unique('vehiculos', 'patente')->ignore($vehiculo)],
+            'marca_id' => ['required', 'exists:marcas,id'],
+            'modelo_id' => [
                 'required',
-                Rule::exists('vehicle_models', 'id')->where('brand_id', $request->brand_id),
+                Rule::exists('modelos', 'id')->where('marca_id', $request->marca_id),
             ],
-            'year' => ['required', 'integer', 'min:1980', 'max:'.(now()->year + 1)],
-            'vehicle_type' => ['required', Rule::in(Vehicle::TYPES)],
-            'current_mileage_km' => ['required', 'integer', 'min:0'],
-            'is_active' => ['boolean'],
+            'anio' => ['required', 'integer', 'min:1980', 'max:'.(now()->year + 1)],
+            //'vehicle_type' => ['required', Rule::in(Vehiculo::TYPES)],
+            'actual_km' => ['required', 'integer', 'min:0'],
+            'activo' => ['boolean'],
         ], [
-            'vehicle_model_id.exists' => 'El modelo no corresponde a la marca seleccionada.',
+            'modelo_id.exists' => 'El modelo no corresponde a la marca seleccionada.',
         ]);
     }
 }

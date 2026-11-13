@@ -51,7 +51,7 @@ class Traslado extends Model
 
     public function conductor(): BelongsTo
     {
-        return $this->belongsTo(Conductor::class);
+        return $this->belongsTo(Conductor::class, 'conductor_id');
     }
 
     public function solicitante(): BelongsTo

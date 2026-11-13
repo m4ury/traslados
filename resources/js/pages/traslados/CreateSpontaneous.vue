@@ -10,46 +10,46 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatKm } from '@/lib/fleet';
 import type { BreadcrumbItem } from '@/types';
-import type { Driver, Vehicle } from '@/types/fleet';
+import type { Conductor, Vehiculo } from '@/types/fleet';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Car, CircleAlert, Gauge, LoaderCircle, MapPin, Navigation, UserRound, Users, Zap } from '@lucide/vue';
 import { computed } from 'vue';
 
 const props = defineProps<{
-    vehicles: Vehicle[];
-    drivers: Pick<Driver, 'id' | 'full_name' | 'rut'>[];
+    vehiculos: Vehiculo[];
+    conductores: Pick<Conductor, 'id' | 'nombres' | 'rut'>[];
     currentDriverId: number | null;
     canChooseDriver: boolean;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Traslados', href: '/trips' },
-    { title: 'Viaje espontáneo', href: '/trips/spontaneous/create' },
+    { title: 'Traslados', href: '/traslados' },
+    { title: 'Viaje espontáneo', href: '/traslados/spontaneous/create' },
 ];
 
 const form = useForm({
-    driver_id: props.currentDriverId ? String(props.currentDriverId) : '',
-    vehicle_id: '',
-    origin: '',
-    destination: '',
-    purpose: '',
-    passengers_count: 1,
-    initial_mileage_km: null as number | null,
+    conductor_id: props.currentDriverId ? String(props.currentDriverId) : '',
+    vehiculo_id: '',
+    origen: '',
+    destino: '',
+    proposito: '',
+    cantidad_pasajeros: 1,
+    init_km: '' as number | '',
 });
 
-const selectedVehicle = computed(() => props.vehicles.find((v) => String(v.id) === form.vehicle_id));
+const selectedVehicle = computed(() => props.vehiculos.find((v) => String(v.id) === form.vehiculo_id));
 
 // El chofer logueado no está en la lista si no está de turno o ya tiene un viaje en curso
 const driverUnavailable = computed(
-    () => !props.canChooseDriver && !!props.currentDriverId && !props.drivers.some((d) => d.id === props.currentDriverId),
+    () => !props.canChooseDriver && !!props.currentDriverId && !props.conductores.some((d) => d.id === props.currentDriverId),
 );
 
-function selectVehicle(v: Vehicle) {
-    form.vehicle_id = String(v.id);
-    form.initial_mileage_km = v.current_mileage_km;
+function selectVehicle(v: Vehiculo) {
+    form.vehiculo_id = String(v.id);
+    form.init_km = v.actual_km;
 }
 
-const submit = () => form.post('/trips/spontaneous');
+const submit = () => form.post('/traslados/spontaneous');
 </script>
 
 <template>
@@ -78,13 +78,13 @@ const submit = () => form.post('/trips/spontaneous');
                     <CardDescription>Solo se muestran choferes activos, de turno y sin viaje en curso.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Select v-model="form.driver_id" :disabled="!canChooseDriver">
+                    <Select v-model="form.conductor_id" :disabled="!canChooseDriver">
                         <SelectTrigger class="w-full sm:w-96"><SelectValue placeholder="Selecciona el chofer" /></SelectTrigger>
                         <SelectContent>
-                            <SelectItem v-for="d in drivers" :key="d.id" :value="String(d.id)">{{ d.full_name }} · {{ d.rut }}</SelectItem>
+                            <SelectItem v-for="d in conductores" :key="d.id" :value="String(d.id)">{{ d.nombres }} · {{ d.rut }}</SelectItem>
                         </SelectContent>
                     </Select>
-                    <InputError class="mt-2" :message="form.errors.driver_id" />
+                    <InputError class="mt-2" :message="form.errors.conductor_id" />
                 </CardContent>
             </Card>
 
@@ -95,25 +95,25 @@ const submit = () => form.post('/trips/spontaneous');
                     <CardDescription>Vehículos activos que no tienen un viaje en curso.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div v-if="vehicles.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div v-if="vehiculos.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <button
-                            v-for="v in vehicles"
+                            v-for="v in vehiculos"
                             :key="v.id"
                             type="button"
                             class="flex flex-col items-start gap-2 rounded-lg border p-4 text-left transition-all hover:border-primary/50 hover:bg-accent/50"
-                            :class="form.vehicle_id === String(v.id) && 'border-primary bg-primary/5 ring-2 ring-primary/20'"
+                            :class="form.vehiculo_id === String(v.id) && 'border-primary bg-primary/5 ring-2 ring-primary/20'"
                             @click="selectVehicle(v)"
                         >
-                            <span class="rounded-md border bg-muted px-2 py-0.5 font-mono text-xs font-semibold tracking-wider">{{ v.plate }}</span>
-                            <span class="font-medium">{{ v.brand?.name }} {{ v.vehicle_model?.name }}</span>
+                            <span class="rounded-md border bg-muted px-2 py-0.5 font-mono text-xs font-semibold tracking-wider">{{ v.patente }}</span>
+                            <span class="font-medium">{{ v.marca?.name }} {{ v.modelo?.name }}</span>
                             <span class="flex w-full justify-between text-xs text-muted-foreground">
-                                <span>{{ v.vehicle_type }} · {{ v.year }}</span>
-                                <span class="font-mono">{{ formatKm(v.current_mileage_km) }}</span>
+                                <span><!-- {{ v.vehicle_type }} · --> {{ v.anio }}</span>
+                                <span class="font-mono">{{ formatKm(v.actual_km) }}</span>
                             </span>
                         </button>
                     </div>
                     <EmptyState v-else :icon="Car" title="No hay vehículos disponibles" description="Todos los vehículos están en ruta o inactivos." />
-                    <InputError class="mt-2" :message="form.errors.vehicle_id" />
+                    <InputError class="mt-2" :message="form.errors.vehiculo_id" />
                 </CardContent>
             </Card>
 
@@ -124,49 +124,49 @@ const submit = () => form.post('/trips/spontaneous');
                 </CardHeader>
                 <CardContent class="grid gap-5 sm:grid-cols-2">
                     <div class="grid gap-2">
-                        <Label for="origin">Origen</Label>
-                        <Input id="origin" v-model="form.origin" placeholder="Ej: Base central" />
-                        <InputError :message="form.errors.origin" />
+                        <Label for="origen">Origen</Label>
+                        <Input id="origen" v-model="form.origen" placeholder="Ej: Base central" />
+                        <InputError :message="form.errors.origen" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="destination">Destino</Label>
-                        <Input id="destination" v-model="form.destination" placeholder="Ej: Hospital del Salvador" />
-                        <InputError :message="form.errors.destination" />
+                        <Label for="destino">Destino</Label>
+                        <Input id="destino" v-model="form.destino" placeholder="Ej: Hospital del Salvador" />
+                        <InputError :message="form.errors.destino" />
                     </div>
                     <div class="grid gap-2 sm:col-span-2">
-                        <Label for="purpose">Motivo <span class="text-muted-foreground">(opcional)</span></Label>
-                        <Input id="purpose" v-model="form.purpose" placeholder="Ej: Retiro de documentación" />
-                        <InputError :message="form.errors.purpose" />
+                        <Label for="proposito">Motivo <span class="text-muted-foreground">(opcional)</span></Label>
+                        <Input id="proposito" v-model="form.proposito" placeholder="Ej: Retiro de documentación" />
+                        <InputError :message="form.errors.proposito" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="passengers" class="flex items-center gap-1.5"><Users class="size-3.5" /> Pasajeros</Label>
-                        <Input id="passengers" v-model.number="form.passengers_count" type="number" min="1" max="60" />
-                        <InputError :message="form.errors.passengers_count" />
+                        <Label for="cantidad_pasajeros" class="flex items-center gap-1.5"><Users class="size-3.5" /> Pasajeros</Label>
+                        <Input id="cantidad_pasajeros" v-model.number="form.cantidad_pasajeros" type="number" min="1" max="60" />
+                        <InputError :message="form.errors.cantidad_pasajeros" />
                     </div>
                     <div class="grid gap-2">
                         <Label for="km" class="flex items-center gap-1.5"><Gauge class="size-3.5" /> Kilometraje inicial</Label>
                         <div class="relative">
                             <Input
                                 id="km"
-                                v-model.number="form.initial_mileage_km"
+                                v-model.number="form.init_km"
                                 type="number"
-                                :min="selectedVehicle?.current_mileage_km ?? 0"
+                                :min="selectedVehicle?.actual_km ?? 0"
                                 :disabled="!selectedVehicle"
                                 class="pr-10 font-mono"
                             />
                             <span class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-muted-foreground">km</span>
                         </div>
                         <p v-if="selectedVehicle" class="text-xs text-muted-foreground">
-                            Último registro: {{ formatKm(selectedVehicle.current_mileage_km) }}. Verifica el odómetro.
+                            Último registro: {{ formatKm(selectedVehicle.actual_km) }}. Verifica el odómetro.
                         </p>
-                        <InputError :message="form.errors.initial_mileage_km" />
+                        <InputError :message="form.errors.init_km" />
                     </div>
                 </CardContent>
             </Card>
 
             <div class="flex justify-end gap-2">
-                <Button variant="outline" as-child><Link href="/trips">Cancelar</Link></Button>
-                <Button type="submit" :disabled="form.processing || !form.vehicle_id || !form.driver_id">
+                <Button variant="outline" as-child><Link href="/traslados">Cancelar</Link></Button>
+                <Button type="submit" :disabled="form.processing || !form.vehiculo_id || !form.conductor_id">
                     <LoaderCircle v-if="form.processing" class="size-4 animate-spin" />
                     <Navigation v-else class="size-4" />
                     Iniciar viaje

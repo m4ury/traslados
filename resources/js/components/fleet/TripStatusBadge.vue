@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
 import { tripStatusMeta } from '@/lib/fleet';
-import type { TripStatus } from '@/types/fleet';
+import type { EstadoTraslado } from '@/types/fleet';
 
-defineProps<{ status: TripStatus }>();
+defineProps<{ status: EstadoTraslado }>();
 </script>
 
 <template>

@@ -23,7 +23,7 @@ class VehiculoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'placa' => ['required', 'string', 'max:20', 'unique:vehiculos,placa'],
+            'patente' => ['required', 'string', 'max:20', 'unique:vehiculos,patente'],
             'vin' => ['nullable', 'string', 'max:32', 'unique:vehiculos,vin'],
             'marca_id' => ['required', 'exists:marcas,id'],
             'modelo_id' => ['required', 'exists:modelos,id'],

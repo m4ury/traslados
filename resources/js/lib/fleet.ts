@@ -21,7 +21,7 @@ export const tripStatusMeta: Record<EstadoTraslado, { label: string; class: stri
         label: 'Autorizado',
         class: 'border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300',
     },
-    en_progreso: {
+    en_curso: {
         label: 'En curso',
         class: 'border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-300',
     },
@@ -35,7 +35,8 @@ export const tripStatusMeta: Record<EstadoTraslado, { label: string; class: stri
     },
 };
 
-export const EstadoTrasladoOrder: EstadoTraslado[] = ['solicitado', 'autorizado', 'en_progreso', 'finalizado', 'cancelado'];
+export const EstadoTrasladoOrder: EstadoTraslado[] = ['solicitado', 'autorizado', 'en_curso', 'finalizado', 'cancelado'];
+export const tripStatusOrder = EstadoTrasladoOrder;
 
 export const tripTypeLabel: Record<TipoTraslado, string> = {
     spontaneous: 'Espontáneo',

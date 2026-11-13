@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EstadoTraslado;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,10 +13,10 @@ class Vehiculo extends Model
 {
     use SoftDeletes;
 
-    public const TYPES = ['Automóvil', 'Camioneta', 'Furgón', 'Minibús', 'Bus', 'Camión'];
+    //public const TYPES = ['Automóvil', 'Camioneta', 'Furgón', 'Minibús', 'Bus', 'Camión'];
 
     protected $fillable = [
-        'placa',
+        'patente',
         'vin',
         'marca_id',
         'modelo_id',
@@ -58,7 +59,7 @@ class Vehiculo extends Model
     {
         return $query->active()->whereDoesntHave(
             'traslados',
-            fn (Builder $q) => $q->where('status', TripStatus::InProgress)
+            fn (Builder $q) => $q->where('estado', EstadoTraslado::EnCurso)
         );
     }
 

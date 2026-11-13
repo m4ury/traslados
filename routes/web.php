@@ -3,7 +3,11 @@
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ModeloController;
 use App\Http\Controllers\VehiculoController;
+use App\Http\Controllers\BitacoraController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TrasladoController;
+
+
 
 Route::inertia('/', 'Welcome')->name('home');
 
@@ -19,7 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('modelos', ModeloController::class)
                 ->only(['index', 'store', 'update', 'destroy'])
                 ->parameters(['modelos' => 'modelo']);
-                
+
             Route::resource('vehiculos', VehiculoController::class)->except(['show']);
         });
 
@@ -30,11 +34,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('spontaneous', 'storeSpontaneous')->name('spontaneous.store');
             Route::get('request/create', 'createRequest')->name('request.create');
             Route::post('request', 'storeRequest')->name('request.store');
-            Route::get('{traslado}', 'show')->name('show');
-            Route::patch('{traslado}/authorize', 'approve')->name('approve');
-            Route::patch('{traslado}/start', 'start')->name('start');
-            Route::patch('{traslado}/complete', 'complete')->name('complete');
-            Route::patch('{traslado}/cancel', 'cancel')->name('cancel');
+            Route::get('{traslados}', 'show')->name('show');
+            Route::patch('{traslados}/authorize', 'approve')->name('approve');
+            Route::patch('{traslados}/start', 'start')->name('start');
+            Route::patch('{traslados}/complete', 'complete')->name('complete');
+            Route::patch('{traslados}/cancel', 'cancel')->name('cancel');
         });
 
         Route::post('bitacora/{traslado}/logs', [BitacoraController::class, 'store'])->name('bitacora.logs.store');

@@ -10,15 +10,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Conductor extends Model
 {
+    protected $table = 'conductores';
+
     protected $fillable = [
         'user_id',
-        'full_name',
         'rut',
         'phone',
         'license_number',
         'license_expires_at',
         'en_turno',
         'activo',
+        'apellido_paterno',
+        'apellido_materno',
+        'nombres'
     ];
 
     protected function casts(): array
@@ -51,5 +55,10 @@ class Conductor extends Model
         return $query->active()
             ->where('en_turno', true)
             ->whereDoesntHave('traslados', fn (Builder $q) => $q->where('estado', EstadoTraslado::EnCurso));
+    }
+
+    public function getFullNameAttribute()
+    {
+        return strtoupper("{$this->nombres} {$this->apellido_paterno} {$this->apellido_materno}");
     }
 }

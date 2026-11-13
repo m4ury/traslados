@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { tripTypeLabel } from '@/lib/fleet';
-import type { TripType } from '@/types/fleet';
+import type { TipoTraslado } from '@/types/fleet';
 import { CalendarClock, Zap } from '@lucide/vue';
 
-defineProps<{ type: TripType }>();
+defineProps<{ type: TipoTraslado }>();
 </script>
 
 <template>

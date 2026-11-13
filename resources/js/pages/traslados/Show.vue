@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatDateTime, formatDuration, formatKm, logEventMeta, manualLogEvents } from '@/lib/fleet';
 import type { BreadcrumbItem } from '@/types';
-import type { Driver, Trip, Vehicle } from '@/types/fleet';
+import type { Conductor, Traslado, Vehiculo } from '@/types/fleet';
 import { Head, useForm } from '@inertiajs/vue3';
 import {
     ArrowRight,
@@ -34,17 +34,18 @@ import {
     Navigation,
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
+/* import { Conductor } from '../../types/fleet'; */
 
 const props = defineProps<{
-    trip: Trip;
+    traslados: Traslado;
     can: { approve: boolean; start: boolean; complete: boolean; cancel: boolean; log: boolean };
-    vehicles: Vehicle[];
-    drivers: (Pick<Driver, 'id' | 'full_name' | 'rut'> & { is_on_duty?: boolean })[];
+    vehiculos: Vehiculo[];
+    conductores: (Pick<Conductor, 'id' | 'nombres' | 'rut'> & { en_turno?: boolean })[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Traslados', href: '/trips' },
-    { title: `Viaje #${props.trip.id}`, href: `/trips/${props.trip.id}` },
+    { title: 'Traslados', href: '/traslados' },
+    { title: `Viaje #${props.traslados.id}`, href: `/traslados/${props.traslados.id}` },
 ];
 
 type DialogName = 'approve' | 'start' | 'complete' | 'cancel';
@@ -55,30 +56,30 @@ const onOpenChange = (open: boolean) => !open && close();
 const opts = { preserveScroll: true, onSuccess: close };
 
 /* ---- Autorizar: asigna vehículo + chofer ---- */
-const approveForm = useForm({ vehicle_id: '', driver_id: '' });
-const approve = () => approveForm.patch(`/trips/${props.trip.id}/authorize`, opts);
+const approveForm = useForm({ vehiculo_id: '', conductor_id: '' });
+const approve = () => approveForm.patch(`/traslados/${props.traslados.id}/authorize`, opts);
 
 /* ---- Iniciar: kilometraje inicial ---- */
-const startForm = useForm({ initial_mileage_km: props.trip.vehicle?.current_mileage_km ?? (null as number | null) });
-const start = () => startForm.patch(`/trips/${props.trip.id}/start`, opts);
+const startForm = useForm({ init_km: props.traslados.vehiculo?.actual_km ?? ('' as number | '') });
+const start = () => startForm.patch(`/traslados/${props.traslados.id}/start`, opts);
 
 /* ---- Finalizar: kilometraje final ---- */
-const completeForm = useForm({ final_mileage_km: null as number | null, notes: '' });
+const completeForm = useForm({ final_km: 0 as number | '', observaciones: '' });
 const distancePreview = computed(() =>
-    completeForm.final_mileage_km != null && props.trip.initial_mileage_km != null
-        ? completeForm.final_mileage_km - props.trip.initial_mileage_km
+    completeForm.final_km != '' && props.traslados.init_km != null
+        ? completeForm.final_km - props.traslados.init_km
         : null,
 );
-const complete = () => completeForm.patch(`/trips/${props.trip.id}/complete`, opts);
+const complete = () => completeForm.patch(`/traslados/${props.traslados.id}/complete`, opts);
 
 /* ---- Cancelar ---- */
 const cancelForm = useForm({ reason: '' });
-const cancel = () => cancelForm.patch(`/trips/${props.trip.id}/cancel`, opts);
+const cancel = () => cancelForm.patch(`/traslados/${props.traslados.id}/cancel`, opts);
 
 /* ---- Novedad en bitácora ---- */
-const logForm = useForm({ event_type: 'checkpoint', mileage_km: null as number | null, location: '', description: '' });
+const logForm = useForm({ event_type: 'checkpoint', distancia_km: '' as number | '', location: '', description: '' });
 const addLog = () =>
-    logForm.post(`/trips/${props.trip.id}/logs`, {
+    logForm.post(`/traslados/${props.traslados.id}/logs`, {
         preserveScroll: true,
         onSuccess: () => logForm.reset(),
     });
@@ -86,17 +87,17 @@ const addLog = () =>
 const statusError = (form: { errors: object }) => (form.errors as Record<string, string>).status;
 
 const details = computed(() => [
-    { label: 'Fecha programada', value: formatDateTime(props.trip.scheduled_at), show: props.trip.trip_type === 'scheduled' },
-    { label: 'Salida', value: formatDateTime(props.trip.departure_at), show: true },
-    { label: 'Regreso', value: formatDateTime(props.trip.return_at), show: true },
-    { label: 'Duración', value: formatDuration(props.trip.departure_at, props.trip.return_at), show: !!props.trip.return_at },
-    { label: 'Solicitado por', value: props.trip.requester?.name ?? '—', show: true },
-    { label: 'Autorizado por', value: props.trip.authorizer?.name ?? '—', show: props.trip.trip_type === 'scheduled' },
+    { label: 'Fecha programada', value: formatDateTime(props.traslados.programado_at), show: props.traslados.tipo_traslado === 'scheduled' },
+    { label: 'Salida', value: formatDateTime(props.traslados.salida_at), show: true },
+    { label: 'Regreso', value: formatDateTime(props.traslados.regreso_at), show: true },
+    { label: 'Duración', value: formatDuration(props.traslados.salida_at, props.traslados.regreso_at), show: !!props.traslados.regreso_at },
+    { label: 'Solicitado por', value: props.traslados.requester?.name ?? '—', show: true },
+    { label: 'Autorizado por', value: props.traslados.authorizer?.name ?? '—', show: props.traslados.authorizer },
 ]);
 </script>
 
 <template>
-    <Head :title="`Viaje #${trip.id}`" />
+    <Head :title="`Viaje #${traslados.id}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6 p-4 md:p-6">
@@ -104,14 +105,14 @@ const details = computed(() => [
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div class="space-y-2">
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="font-mono text-sm text-muted-foreground">#{{ trip.id }}</span>
-                        <TripStatusBadge :status="trip.status" />
-                        <TripTypeBadge :type="trip.trip_type" />
+                        <span class="font-mono text-sm text-muted-foreground">#{{ traslados.id }}</span>
+                        <TripStatusBadge :status="traslados.estado" />
+                        <TripTypeBadge :type="traslados.tipo_traslado" />
                     </div>
                     <h1 class="flex flex-wrap items-center gap-2 text-xl font-semibold tracking-tight">
-                        {{ trip.origin }} <ArrowRight class="size-5 text-muted-foreground" /> {{ trip.destination }}
+                        {{ traslados.origen }} <ArrowRight class="size-5 text-muted-foreground" /> {{ traslados.destino }}
                     </h1>
-                    <p v-if="trip.purpose" class="text-sm text-muted-foreground">{{ trip.purpose }}</p>
+                    <p v-if="traslados.proposito" class="text-sm text-muted-foreground">{{ traslados.proposito }}</p>
                 </div>
 
                 <div class="flex flex-wrap gap-2">
@@ -126,8 +127,8 @@ const details = computed(() => [
 
             <FlashMessage />
 
-            <Card v-if="trip.status !== 'cancelled'">
-                <CardContent class="pt-6"><TripStepper :trip="trip" /></CardContent>
+            <Card v-if="traslados.estado !== 'cancelado'">
+                <CardContent class="pt-6"><TripStepper :traslado="traslados" /></CardContent>
             </Card>
             <div
                 v-else
@@ -145,10 +146,10 @@ const details = computed(() => [
                                 <CardTitle class="flex items-center gap-2 text-base"><Car class="size-4" /> Vehículo</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div v-if="trip.vehicle" class="space-y-1">
-                                    <span class="rounded-md border bg-muted px-2 py-0.5 font-mono text-xs font-semibold tracking-wider">{{ trip.vehicle.plate }}</span>
-                                    <p class="pt-1 font-medium">{{ trip.vehicle.brand?.name }} {{ trip.vehicle.vehicle_model?.name }}</p>
-                                    <p class="text-xs text-muted-foreground">{{ trip.vehicle.vehicle_type }} · {{ trip.vehicle.year }}</p>
+                                <div v-if="traslados.vehiculo" class="space-y-1">
+                                    <span class="rounded-md border bg-muted px-2 py-0.5 font-mono text-xs font-semibold tracking-wider">{{ traslados.vehiculo.patente }}</span>
+                                    <p class="pt-1 font-medium">{{ traslados.vehiculo.marca?.name }} {{ traslados.vehiculo.modelo?.name }}</p>
+                                    <p class="text-xs text-muted-foreground"><!-- {{ traslados.vehiculo.vehiculo_type }} · --> {{ traslados.vehiculo.anio }}</p>
                                 </div>
                                 <p v-else class="text-sm text-muted-foreground italic">Pendiente de asignación</p>
                             </CardContent>
@@ -159,10 +160,10 @@ const details = computed(() => [
                                 <CardTitle class="flex items-center gap-2 text-base"><UserRound class="size-4" /> Chofer</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div v-if="trip.driver" class="space-y-1">
-                                    <p class="font-medium">{{ trip.driver.full_name }}</p>
-                                    <p class="text-xs text-muted-foreground">RUT {{ trip.driver.rut }}</p>
-                                    <p v-if="trip.driver.phone" class="text-xs text-muted-foreground">{{ trip.driver.phone }}</p>
+                                <div v-if="traslados.conductor" class="space-y-1">
+                                    <p class="font-medium">{{ traslados.conductor.nombres }}</p>
+                                    <p class="text-xs text-muted-foreground">RUT {{ traslados.conductor.rut }}</p>
+                                    <p v-if="traslados.conductor.phone" class="text-xs text-muted-foreground">{{ traslados.conductor.phone }}</p>
                                 </div>
                                 <p v-else class="text-sm text-muted-foreground italic">Pendiente de asignación</p>
                             </CardContent>
@@ -176,15 +177,15 @@ const details = computed(() => [
                         <CardContent class="grid grid-cols-3 gap-4">
                             <div>
                                 <p class="text-xs text-muted-foreground">Inicial</p>
-                                <p class="font-mono text-lg font-semibold">{{ formatKm(trip.initial_mileage_km) }}</p>
+                                <p class="font-mono text-lg font-semibold">{{ formatKm(traslados.init_km) }}</p>
                             </div>
                             <div>
                                 <p class="text-xs text-muted-foreground">Final</p>
-                                <p class="font-mono text-lg font-semibold">{{ formatKm(trip.final_mileage_km) }}</p>
+                                <p class="font-mono text-lg font-semibold">{{ formatKm(traslados.final_km) }}</p>
                             </div>
                             <div>
                                 <p class="text-xs text-muted-foreground">Recorrido</p>
-                                <p class="font-mono text-lg font-semibold text-primary">{{ formatKm(trip.distance_km) }}</p>
+                                <p class="font-mono text-lg font-semibold text-primary">{{ formatKm(traslados.distancia_km) }}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -201,11 +202,11 @@ const details = computed(() => [
                                 </template>
                                 <div>
                                     <dt class="text-xs text-muted-foreground">Pasajeros</dt>
-                                    <dd class="flex items-center gap-1 text-sm font-medium"><Users class="size-3.5" /> {{ trip.passengers_count }}</dd>
+                                    <dd class="flex items-center gap-1 text-sm font-medium"><Users class="size-3.5" /> {{ traslados.cantidad_pasajeros }}</dd>
                                 </div>
-                                <div v-if="trip.notes" class="sm:col-span-2">
+                                <div v-if="traslados.observaciones" class="sm:col-span-2">
                                     <dt class="text-xs text-muted-foreground">Observaciones</dt>
-                                    <dd class="text-sm whitespace-pre-line">{{ trip.notes }}</dd>
+                                    <dd class="text-sm whitespace-pre-line">{{ traslados.observaciones }}</dd>
                                 </div>
                             </dl>
                         </CardContent>
@@ -227,18 +228,18 @@ const details = computed(() => [
                                         <SelectItem v-for="e in manualLogEvents" :key="e" :value="e">{{ logEventMeta[e].label }}</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <Input v-model.number="logForm.mileage_km" type="number" placeholder="Km (opcional)" class="bg-background" />
+                                <Input v-model.number="logForm.distancia_km" type="number" placeholder="Km (opcional)" class="bg-background" />
                             </div>
                             <Input v-model="logForm.location" placeholder="Ubicación (opcional)" class="bg-background" />
                             <Textarea v-model="logForm.description" rows="2" placeholder="Describe la novedad…" class="bg-background" />
-                            <InputError :message="logForm.errors.description || logForm.errors.mileage_km" />
+                            <InputError :message="logForm.errors.description || logForm.errors.distancia_km" />
                             <Button type="submit" size="sm" :disabled="logForm.processing || !logForm.description">
                                 <LoaderCircle v-if="logForm.processing" class="size-4 animate-spin" />
                                 <Plus v-else class="size-4" /> Agregar registro
                             </Button>
                         </form>
 
-                        <TripTimeline v-if="trip.logs?.length" :logs="trip.logs" />
+                        <TripTimeline v-if="traslados.logs?.length" :logs="traslados.logs" />
                         <EmptyState v-else :icon="NotebookPen" title="Sin registros" />
                     </CardContent>
                 </Card>
@@ -251,36 +252,36 @@ const details = computed(() => [
                 <form class="grid gap-5" @submit.prevent="approve">
                     <DialogHeader>
                         <DialogTitle>Asignar y autorizar viaje</DialogTitle>
-                        <DialogDescription>Salida programada: {{ formatDateTime(trip.scheduled_at) }}. Se valida que el vehículo y el chofer no tengan otro viaje ese día.</DialogDescription>
+                        <DialogDescription>Salida programada: {{ formatDateTime(traslados.programado_at) }}. Se valida que el vehículo y el chofer no tengan otro viaje ese día.</DialogDescription>
                     </DialogHeader>
                     <div class="grid gap-2">
                         <Label>Vehículo</Label>
-                        <Select v-model="approveForm.vehicle_id">
+                        <Select v-model="approveForm.vehiculo_id">
                             <SelectTrigger class="w-full"><SelectValue placeholder="Selecciona un vehículo" /></SelectTrigger>
                             <SelectContent>
-                                <SelectItem v-for="v in vehicles" :key="v.id" :value="String(v.id)">
-                                    {{ v.plate }} · {{ v.brand?.name }} {{ v.vehicle_model?.name }}
+                                <SelectItem v-for="v in vehiculos" :key="v.id" :value="String(v.id)">
+                                    {{ v.patente }} · {{ v.marca?.name }} {{ v.modelo?.name }}
                                 </SelectItem>
                             </SelectContent>
                         </Select>
-                        <InputError :message="approveForm.errors.vehicle_id" />
+                        <InputError :message="approveForm.errors.vehiculo_id" />
                     </div>
                     <div class="grid gap-2">
                         <Label>Chofer</Label>
-                        <Select v-model="approveForm.driver_id">
+                        <Select v-model="approveForm.conductor_id">
                             <SelectTrigger class="w-full"><SelectValue placeholder="Selecciona un chofer" /></SelectTrigger>
                             <SelectContent>
-                                <SelectItem v-for="d in drivers" :key="d.id" :value="String(d.id)">
-                                    {{ d.full_name }}{{ d.is_on_duty ? ' · de turno' : '' }}
+                                <SelectItem v-for="d in conductores" :key="d.id" :value="String(d.id)">
+                                    {{ d.nombres }}{{ d.en_turno ? ' · de turno' : '' }}
                                 </SelectItem>
                             </SelectContent>
                         </Select>
-                        <InputError :message="approveForm.errors.driver_id" />
+                        <InputError :message="approveForm.errors.conductor_id" />
                     </div>
                     <InputError :message="statusError(approveForm)" />
                     <DialogFooter>
                         <Button type="button" variant="outline" @click="close">Volver</Button>
-                        <Button type="submit" :disabled="approveForm.processing || !approveForm.vehicle_id || !approveForm.driver_id">
+                        <Button type="submit" :disabled="approveForm.processing || !approveForm.vehiculo_id || !approveForm.conductor_id">
                             <LoaderCircle v-if="approveForm.processing" class="size-4 animate-spin" />
                             <ShieldCheck v-else class="size-4" /> Autorizar
                         </Button>
@@ -295,13 +296,13 @@ const details = computed(() => [
                 <form class="grid gap-5" @submit.prevent="start">
                     <DialogHeader>
                         <DialogTitle>Iniciar viaje</DialogTitle>
-                        <DialogDescription>Registra el kilometraje que marca el odómetro de {{ trip.vehicle?.plate }} al salir.</DialogDescription>
+                        <DialogDescription>Registra el kilometraje que marca el odómetro de {{ traslados.vehiculo?.patente }} al salir.</DialogDescription>
                     </DialogHeader>
                     <div class="grid gap-2">
                         <Label for="initial_km">Kilometraje inicial</Label>
-                        <Input id="initial_km" v-model.number="startForm.initial_mileage_km" type="number" :min="trip.vehicle?.current_mileage_km ?? 0" class="font-mono" />
-                        <p class="text-xs text-muted-foreground">Último registro del vehículo: {{ formatKm(trip.vehicle?.current_mileage_km) }}</p>
-                        <InputError :message="startForm.errors.initial_mileage_km || statusError(startForm)" />
+                        <Input id="initial_km" v-model.number="startForm.init_km" type="number" :min="traslados.vehiculo?.actual_km ?? 0" class="font-mono" />
+                        <p class="text-xs text-muted-foreground">Último registro del vehículo: {{ formatKm(traslados.vehiculo?.actual_km) }}</p>
+                        <InputError :message="startForm.errors.init_km || statusError(startForm)" />
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" @click="close">Volver</Button>
@@ -320,23 +321,23 @@ const details = computed(() => [
                 <form class="grid gap-5" @submit.prevent="complete">
                     <DialogHeader>
                         <DialogTitle>Finalizar viaje</DialogTitle>
-                        <DialogDescription>Kilometraje inicial: {{ formatKm(trip.initial_mileage_km) }}</DialogDescription>
+                        <DialogDescription>Kilometraje inicial: {{ formatKm(traslados.init_km) }}</DialogDescription>
                     </DialogHeader>
                     <div class="grid gap-2">
                         <Label for="final_km">Kilometraje final</Label>
-                        <Input id="final_km" v-model.number="completeForm.final_mileage_km" type="number" :min="trip.initial_mileage_km ?? 0" class="font-mono" />
+                        <Input id="final_km" v-model.number="completeForm.final_km" type="number" :min="traslados.init_km ?? 0" class="font-mono" />
                         <p v-if="distancePreview !== null" class="text-xs" :class="distancePreview < 0 ? 'text-destructive' : 'text-muted-foreground'">
                             Recorrido: {{ formatKm(distancePreview) }}
                         </p>
-                        <InputError :message="completeForm.errors.final_mileage_km || statusError(completeForm)" />
+                        <InputError :message="completeForm.errors.final_km || statusError(completeForm)" />
                     </div>
                     <div class="grid gap-2">
                         <Label for="notes">Observaciones <span class="text-muted-foreground">(opcional)</span></Label>
-                        <Textarea id="notes" v-model="completeForm.notes" rows="3" placeholder="Estado del vehículo, novedades…" />
+                        <Textarea id="notes" v-model="completeForm.observaciones" rows="3" placeholder="Estado del vehículo, novedades…" />
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" @click="close">Volver</Button>
-                        <Button type="submit" :disabled="completeForm.processing || completeForm.final_mileage_km === null">
+                        <Button type="submit" :disabled="completeForm.processing || completeForm.final_km === null">
                             <LoaderCircle v-if="completeForm.processing" class="size-4 animate-spin" />
                             <CircleCheck v-else class="size-4" /> Finalizar
                         </Button>

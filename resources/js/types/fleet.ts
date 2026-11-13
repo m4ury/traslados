@@ -3,7 +3,7 @@ export interface Marca {
     name: string;
     is_active: boolean;
     vehicle_models_count?: number;
-    vehicle_models?: Modelo[];
+    modelos?: Modelo[];
 }
 
 export interface Modelo {
@@ -31,14 +31,14 @@ export interface Vehiculo {
 export interface Conductor {
     id: number;
     user_id: number | null;
-    full_name: string;
+    nombres: string;
     rut: string;
     phone?: string | null;
     en_turno?: boolean;
     activo?: boolean;
 }
 
-export type EstadoTraslado = 'solicitado' | 'autorizado' | 'en_progreso' | 'finalizado' | 'cancelado';
+export type EstadoTraslado = 'solicitado' | 'autorizado' | 'en_curso' | 'finalizado' | 'cancelado';
 export type TipoTraslado = 'spontaneous' | 'scheduled';
 export type LogEvent = 'status' | 'departure' | 'checkpoint' | 'incident' | 'refuel' | 'arrival' | 'note';
 
@@ -64,19 +64,19 @@ export interface Traslado {
     estado: EstadoTraslado;
     vehiculo_id: number | null;
     conductor_id: number | null;
-    scheduled_at: string | null;
+    programado_at: string | null;
     salida_at: string | null;
-    return_at: string | null;
-    origin: string;
-    destination: string;
-    purpose: string | null;
-    passengers_count: number;
-    initial_mileage_km: number | null;
-    final_mileage_km: number | null;
-    distance_km: number | null;
-    notes: string | null;
+    regreso_at: string | null;
+    origen: string;
+    destino: string;
+    proposito: string | null;
+    cantidad_pasajeros: number;
+    init_km: number | null;
+    final_km: number | null;
+    distancia_km: number | null;
+    observaciones: string | null;
     created_at: string;
-    vehicle?: Vehiculo | null;
+    vehiculo?: Vehiculo | null;
     conductor?: Conductor | null;
     requester?: UserRef | null;
     authorizer?: UserRef | null;
